@@ -1,12 +1,18 @@
 # Anticipatory Music Transformer
 
-## Note: Changelog of this fork
+## Note: Changelog of this fork (only implementation commits)
 
+- Commit 45dffe8: Add `retrieveCheckpointAndBuildOnnx.sh` script for use with AWS Sagemaker.
+- Commit 8c93d2a: Update `--add-kick-drum` to `add-drum` to add drum track instead of just kick.
 - Commits 363e3ac, cd93efc: Add `--add-kick-drum` argument in `midi-preprocess.py`.
 - Commit ccfbeb6: Add `tokenize-custom.py` in `finetune`.
 - Commit 3b3d414: Add `removeControls` option to `events_to_compound` function in `convert.py`. 
 - Commit ffb0c22: Remove the check for long tracks in `tokenize.py`.
 - Commit 69600b0: Update `sample.py` to prevent the generation of REST tokens instead of time and durations.
+
+## Note: Branches
+
+A branch `harmonizer-version` was created for use in another project. It implements an `active_instruments` filter in the generation process.
 
 ## Note: How to prepare data for training
 

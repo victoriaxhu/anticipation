@@ -220,7 +220,17 @@ def min_time(tokens, seconds=True, instr=None):
     return mt/float(TIME_RESOLUTION) if seconds else mt
 
 
-def max_time(tokens, seconds=True, instr=None):
+def max_time(tokens, seconds=True, instr=None, include_duration=False):
+    """
+    Calculate the maximum time of a sequence of events.
+    Args:
+        tokens: a sequence of events
+        seconds: if True, return time in seconds. Else, return in ticks
+        instr: if not None, only consider events of this instrument
+        include_duration: if True, add the duration to the time
+    Returns:
+        mt: the maximum time of the sequence
+    """
     mt = 0
     for time, dur, note in zip(tokens[0::3],tokens[1::3],tokens[2::3]):
         # keep checking for max_time, even if it appears after a separator
@@ -229,16 +239,18 @@ def max_time(tokens, seconds=True, instr=None):
 
         if note < CONTROL_OFFSET:
             time -= TIME_OFFSET
+            dur -= DUR_OFFSET
             note -= NOTE_OFFSET
         else:
             time -= ATIME_OFFSET
+            dur -= DUR_OFFSET
             note -= ANOTE_OFFSET
 
         # max time of a particular instrument
         if instr is not None and instr != note//2**7:
             continue
 
-        mt = max(mt, time)
+        mt = max(mt, time + dur if include_duration else time)
 
     return mt/float(TIME_RESOLUTION) if seconds else mt
 
