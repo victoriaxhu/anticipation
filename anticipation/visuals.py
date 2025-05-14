@@ -63,3 +63,64 @@ def visualize(tokens, output, selected=None):
 
     plt.tight_layout()
     plt.savefig(output)
+
+def show_piano_roll(tokens, save_path=None, bar_length=200):
+    """
+    Create a piano roll representation of the tokens
+    Args:
+        tokens (list): List of MIDI tokens.
+        save_path (str): Path to save the piano roll image. If None, does not save.
+        bar_length (int): Length of bars in the piano roll.
+    """
+
+    # Collect list of instruments (control instruments will be 128+)
+    instrs = list(set([(n - NOTE_OFFSET) // 128 if n < CONTROL_OFFSET else 128 + ((n - ANOTE_OFFSET) // 128) for n in tokens[2::3]]))
+    # print(instrs)
+
+    # Create a piano roll
+    roll = np.zeros((len(instrs), 128, int(ops.max_time(tokens, seconds=False, include_duration=True))), dtype=np.uint8)
+
+    for t, d, n in zip(tokens[0::3], tokens[1::3], tokens[2::3]):
+        if n == REST:
+            continue
+        # Calculate the instrument index
+        i = (n - NOTE_OFFSET) // 128 if n < CONTROL_OFFSET else 128 + ((n - ANOTE_OFFSET) // 128)
+
+        # Find the index of the instrument in the list
+        idx = instrs.index(i)
+
+        # If the note is a control signal, adjust the time and duration
+        if n < CONTROL_OFFSET:
+            note = (n - NOTE_OFFSET) % 128
+        else:
+            t = t - CONTROL_OFFSET
+            d = d - CONTROL_OFFSET
+            note = (n - ANOTE_OFFSET) % 128
+
+        roll[idx, note, t:t + (d - DUR_OFFSET)] = 1
+
+
+    plt.figure(figsize=(12, 6))
+    colors = matplotlib.colormaps.get_cmap('tab10')  # Or 'tab20', 'hsv', etc.
+
+    instrs_drawn = set()
+    for i, instr in enumerate(instrs):
+        # Find all active notes for this instrument
+        for note in range(128):
+            times = np.where(roll[i, note] == 1)[0]
+            if len(times) > 0:
+                plt.scatter(times, [note] * len(times), s=1, color=colors(i), label=('CTRL: ' if instr >= 128 else '') + f'Instr {instr%128}' if instr not in instrs_drawn else "", alpha=0.5)
+                instrs_drawn.add(instr)
+    plt.xlabel('Time (steps)')
+    plt.ylabel('MIDI Note')
+    plt.title('Piano Roll')
+    plt.legend(loc='upper right', markerscale=5, fontsize=8, frameon=False)
+    plt.ylim(0, 127)
+    plt.xlim(0, roll.shape[2])
+    plt.tight_layout()
+    # Create bar lines
+    for i in range(0, roll.shape[2], bar_length):
+        plt.axvline(x=i, color='gray', linestyle='--', linewidth=0.5)
+    if save_path is not None:
+        plt.savefig(save_path, dpi=300)
+    plt.show()
