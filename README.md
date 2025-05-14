@@ -2,6 +2,7 @@
 
 ## Note: Changelog of this fork (only implementation commits)
 
+- Commit dc9a77c: Add new visualisation tool `visuals.show_piano_roll(tokens)`.
 - Commit 2d79000: Update `ops.max_time` to optionally include duration through `include_duration` argument.
 - Commit 45dffe8: Add `retrieveCheckpointAndBuildOnnx.sh` script for use with AWS Sagemaker.
 - Commit 8c93d2a: Update `--add-kick-drum` to `add-drum` to add drum track instead of just kick.
